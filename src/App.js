@@ -6,11 +6,22 @@ export default function App() {
   let sDate = new Date();
   let eDate = new Date();
   eDate.setMinutes(eDate.getMinutes() + 1)
-  let time = Math.floor((sDate.getTime()/1000)) + "&to=" + Math.floor((eDate.getTime()/1000));
+  let time = Math.floor((sDate.getTime() / 1000)) + "&to=" + Math.floor((eDate.getTime() / 1000));
   console.log('time', time)
 
   useEffect(() => {
-    axios.get("https://tradingview.bitkub.com/tradingview/history?symbol=ETH_THB&resolution=1&from=" + time)
+    // axios.get("https://tradingview.bitkub.com/tradingview/history?symbol=ETH_THB&resolution=1&from=" + time)
+    //   .then(function (res) {
+    //     console.log(res.data);
+    //   })
+    //   .catch(function (error) {
+    //     console.log(error);
+    //   })
+    //   .then(function () {
+
+    //   });
+
+    axios.get("http://localhost:3001/api/line-notify")
       .then(function (res) {
         console.log(res.data);
       })
