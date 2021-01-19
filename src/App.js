@@ -4,13 +4,28 @@ import './App.css';
 
 export default function App() {
   let sDate = new Date();
+  sDate.setMinutes(sDate.getMinutes() - 1)
   let eDate = new Date();
-  eDate.setMinutes(eDate.getMinutes() + 1)
   let time = Math.floor((sDate.getTime() / 1000)) + "&to=" + Math.floor((eDate.getTime() / 1000));
   console.log('time', time)
+  
+  console.log(new Date(sDate))
+  console.log(new Date(eDate))
 
   useEffect(() => {
-    // axios.get("https://tradingview.bitkub.com/tradingview/history?symbol=ETH_THB&resolution=1&from=" + time)
+    axios.get("https://tradingview.bitkub.com/tradingview/history?symbol=ETH_THB&resolution=1&from=1610962292&to=1610962892")
+      .then(function (res) {
+        console.log(res.data);
+        console.log('res.data.c', res.data.c[0])
+      })
+      .catch(function (error) {
+        console.log(error);
+      })
+      .then(function () {
+
+      });
+
+    // axios.get("http://localhost:3001/api/eth-start")
     //   .then(function (res) {
     //     console.log(res.data);
     //   })
@@ -20,17 +35,6 @@ export default function App() {
     //   .then(function () {
 
     //   });
-
-    axios.get("http://localhost:3001/api/line-notify")
-      .then(function (res) {
-        console.log(res.data);
-      })
-      .catch(function (error) {
-        console.log(error);
-      })
-      .then(function () {
-
-      });
   }, [])
 
   return (
