@@ -1,53 +1,57 @@
 const express = require('express');
 const request = require('request');
 const app = express();
+app.use(express.json());
 
 var loop_Timer;
 var KEY_AUTH = "tjLNCr5qLSdMgdfV7Z1gMNFWnRROAf36gUohbeEcIUo";
-var trad_in = 0;
-var trad_out = 0;
+var trad_in = 38000;
+var trad_out = 35000;
 
-app.get('/eth-start', (req, res) => {
-    loop_Timer = setInterval(function () {
+app.get('/api/alert-start', (req, res) => {
+    let { timer = 5000, symbol = 'ETH_THB', timeFrame = 1 } = req.body;
 
-        let sDate = new Date();
-        let eDate = new Date();
-        eDate.setMinutes(eDate.getMinutes() + 1)
-        let time = Math.floor((sDate.getTime() / 1000)) + "&to=" + Math.floor((eDate.getTime() / 1000));
-
-        request({
-            method: 'GET',
-            uri: "https://tradingview.bitkub.com/tradingview/history?symbol=ETH_THB&resolution=1&from=1610962292&to=1610962892"
-        }, (err, httpResponse, bodys) => {
-            if (err) {
-                console.log(err)
-                clearInterval(loop_Timer);
-            } else {
-                // STATUS 200
-                let result = checkPrice(bodys);
-                lineNotify(result, KEY_AUTH)
-                res.end('START notify-api');
-            }
-        });
-    }, 5000);
+    // loop_Timer = setInterval(function () {
+    let sDate = new Date();
+    let eDate = new Date();
+    eDate.setMinutes(eDate.getMinutes() + 1)
+    let time = Math.floor((sDate.getTime() / 1000)) + "&to=" + Math.floor((eDate.getTime() / 1000));
+    let URI = "https://tradingview.bitkub.com/tradingview/history?symbol=" + symbol + "&resolution=" + timeFrame + "&from=1610962292&to=1610962892";
+    console.log('URI', URI);
+    request({
+        method: 'GET',
+        uri: URI
+    }, (err, httpResponse, bodys) => {
+        if (err) {
+            console.log(err)
+            clearInterval(loop_Timer);
+        } else {
+            let result = checkPrice(bodys);
+            lineNotify(result, KEY_AUTH)
+        }
+    });
+    // }, timer);
+    console.log('alert-start');
 });
 
 function checkPrice(bodys) {
     let datas = JSON.parse(bodys);
-    // let price = datas.c[0];
-    let price = 40000;
+    let price = datas.c[0];
+    // let price = 29999;
     let text = "";
+
     //จุดเข้า
-    if(price <= trad_in){
-        text += "ราคา ETH \nTHB ฿30,000\nUSD $1,000"
+    if (price <= trad_in) {
+        text += "\n*** เข้า ETH *** \nTHB ฿" + numberWithCommas(price) + "\nUSD $" + numberWithCommas((price / 30).toFixed(2))
     }
-    
-    // if (price > 30000) {
-    //     return "ราคา ETH \nTHB ฿30,000\nUSD $1,000";
-    // } else if (price > 31000) {
-    //     return "ราคา ETH \nTHB ฿31,000\nUSD $1,000";
+    //จุดออก
+    // else if (price >= trad_out) {
+    //     text += "\n*** ออก ETH *** \nTHB ฿" + numberWithCommas(price) + "\nUSD $" + numberWithCommas((price / 30).toFixed(2))
     // }
+    // text += "\n\nvar trad_in = 38000;\ntimer = 5000";
+    return text
 }
+
 
 function lineNotify(message = "", KEY_AUTH) {
     request({
@@ -72,9 +76,14 @@ function lineNotify(message = "", KEY_AUTH) {
     });
 }
 
-app.get('/eth-stop', (req, res) => {
+app.get('/alert-stop', (req, res) => {
     clearInterval(loop_Timer);
-    res.end('STOP notify-api');
+    console.log('alert-start');
+    res.end('alert-start');
 });
+
+function numberWithCommas(x) {
+    return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
 
 module.exports = app;
